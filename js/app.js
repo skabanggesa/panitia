@@ -31,14 +31,12 @@ const loadPanitiaList = async () => {
     panitiaDropdown.innerHTML = '<option value="">-- Pilih Panitia --</option>';
 
     try {
-        // MENGGUNAKAN 'db' yang dieksport (V8 Syntax)
+        // V8 Syntax: db.collection()
         const panitiaCol = db.collection('Panitia'); 
         const panitiaSnapshot = await panitiaCol.get(); 
         
         if (panitiaSnapshot.empty) {
             console.warn("Tiada panitia dijumpai dalam pangkalan data.");
-            // Paparkan mesej kepada pengguna jika tiada data
-            // authErrorMessage.textContent = "Tiada panitia dijumpai dalam pangkalan data. Sila semak Firestore.";
             return;
         }
 
@@ -69,7 +67,7 @@ loginForm?.addEventListener('submit', async (e) => {
     const password = document.getElementById('login-password').value;
 
     try {
-        // MENGGUNAKAN 'auth' yang dieksport (V8 Syntax)
+        // V8 Syntax: auth.signInWithEmailAndPassword()
         await auth.signInWithEmailAndPassword(email, password); 
     } catch (error) {
         console.error("Ralat Login:", error);
@@ -82,7 +80,7 @@ loginForm?.addEventListener('submit', async (e) => {
  */
 logoutBtn?.addEventListener('click', async () => {
     try {
-        // MENGGUNAKAN 'auth' yang dieksport (V8 Syntax)
+        // V8 Syntax: auth.signOut()
         await auth.signOut(); 
         localStorage.removeItem('selectedPanitiaId');
         localStorage.removeItem('selectedPanitiaName');
@@ -102,7 +100,6 @@ accessBtn?.addEventListener('click', () => {
         localStorage.setItem('selectedPanitiaId', selectedPanitiaId);
         localStorage.setItem('selectedPanitiaName', selectedPanitiaName);
 
-        // Laluan yang betul ke dashboard.html untuk pemilihan kategori
         window.location.href = 'pages/dashboard.html'; 
     } 
 });
@@ -111,8 +108,8 @@ accessBtn?.addEventListener('click', () => {
  * Periksa Status Pengguna & Muatkan UI yang betul
  */
 if (loginSection) { // Hanya jalankan pada index.html
-    // MENGGUNAKAN SINTAKS V8 GLOBAL - UNTUK MENGELAKKAN 'onAuthStateChanged undefined'
-    firebase.auth().onAuthStateChanged((user) => { 
+    // V8 Syntax: auth.onAuthStateChanged()
+    auth.onAuthStateChanged((user) => { 
         if (user) {
             loginSection.style.display = 'none';
             panitiaSelectionSection.style.display = 'block';
@@ -156,7 +153,7 @@ const loadDocuments = async () => {
     tableBody.innerHTML = '<tr><td colspan="5">Memuatkan data...</td></tr>';
 
     try {
-        // MENGGUNAKAN 'db' yang dieksport (V8 Syntax)
+        // V8 Syntax: db.collection().doc().collection()
         const documentsRef = db.collection('Panitia').doc(currentPanitiaId).collection(currentCategory);
         
         // Buat query dan order
@@ -229,7 +226,7 @@ const handleFormSubmission = async (e) => {
             const file = fileInput.files[0];
             const uniqueId = docId || Date.now();
             
-            // MENGGUNAKAN 'storage' yang dieksport (V8 Syntax)
+            // V8 Syntax: storage.ref().child()
             const storagePath = `${currentPanitiaId}/${currentCategory}/${uniqueId}_${file.name}`;
             const fileRef = storage.ref().child(storagePath);
             
@@ -239,6 +236,7 @@ const handleFormSubmission = async (e) => {
             // Jika mengedit, padam fail lama dari Storage
             if (docId && existingFileUrl) {
                 try { 
+                    // V8 Syntax: storage.refFromURL()
                     const oldFileRef = storage.refFromURL(existingFileUrl);
                     await oldFileRef.delete(); 
                 } catch (err) { 
@@ -281,7 +279,7 @@ const handleDelete = async (docId, fileUrl) => {
     if (!confirm("Adakah anda pasti mahu memadam dokumen ini? Tindakan ini tidak boleh diundur.")) return;
 
     try {
-        // MENGGUNAKAN 'db' dan 'storage' yang dieksport (V8 Syntax)
+        // V8 Syntax: Padam dari Firestore
         const documentRef = db.collection('Panitia').doc(currentPanitiaId).collection(currentCategory).doc(docId);
         await documentRef.delete();
 
@@ -367,8 +365,6 @@ const initPanitiaView = () => {
     currentCategory = params.get('category');
     const panitiaName = localStorage.getItem('selectedPanitiaName');
 
-    // Semak Autentikasi dan Data Asas
-    // Kita tidak boleh bergantung pada auth.currentUser kerana mungkin null
     if (!currentPanitiaId || !currentCategory) { 
         alert("Sesi tamat atau data panitia tidak lengkap. Sila log masuk semula.");
         window.location.href = '../index.html';
@@ -390,8 +386,8 @@ const initPanitiaView = () => {
 document.addEventListener('DOMContentLoaded', () => {
     // Jalankan logik panitia-view.html jika kita berada di halaman tersebut
     if (window.location.pathname.includes('panitia-view.html')) {
-        // MENGGUNAKAN SINTAKS V8 GLOBAL - UNTUK MENGELAKKAN 'onAuthStateChanged undefined'
-        firebase.auth().onAuthStateChanged((user) => { 
+        // V8 Syntax: auth.onAuthStateChanged()
+        auth.onAuthStateChanged((user) => { 
             if (user) {
                 initPanitiaView();
             } else {
