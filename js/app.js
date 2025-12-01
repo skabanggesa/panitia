@@ -2,12 +2,12 @@
 // js/app.js - LOGIK UTAMA SISTEM PENGURUSAN PANITIA
 // =========================================================================
 
-// Import rujukan lokal dari firebase.config.js
+// Import rujukan dari firebase.config.js (INI KINI MENDAPATKAN DARI window.db/auth/storage)
 import { db, auth, storage } from "./firebase.config.js"; 
 
 // -------------------------------------------------------------------------
-// PENTING: AKSES FUNGSI FIREBASE MELALUI OBJEK GLOBAL (SDK V8)
-// SEMUA IMPORT DARI URL "https://www.gstatic.com/..." TELAH DIBUANG!
+// PERHATIAN: TIDAK PERLU IMPORT URL ATAU AKSES firebase.firestore DI SINI.
+// FUNGSI AKAN DIAKSES MELALUI OBJEK db, auth, DAN storage.
 // -------------------------------------------------------------------------
 
 // Pembolehubah Global
@@ -36,7 +36,7 @@ const loadPanitiaList = async () => {
     panitiaDropdown.innerHTML = '<option value="">-- Pilih Panitia --</option>';
 
     try {
-        // Guna kaedah V8: db.collection()
+        // MENGGUNAKAN 'db' yang dieksport dari firebase.config.js (V8)
         const panitiaCol = db.collection('Panitia'); 
         const panitiaSnapshot = await panitiaCol.get(); 
         
@@ -72,7 +72,7 @@ loginForm?.addEventListener('submit', async (e) => {
     const password = document.getElementById('login-password').value;
 
     try {
-        // Guna kaedah V8: auth.signInWithEmailAndPassword()
+        // MENGGUNAKAN 'auth' yang dieksport dari firebase.config.js (V8)
         await auth.signInWithEmailAndPassword(email, password); 
     } catch (error) {
         console.error("Ralat Login:", error);
@@ -85,7 +85,7 @@ loginForm?.addEventListener('submit', async (e) => {
  */
 logoutBtn?.addEventListener('click', async () => {
     try {
-        // Guna kaedah V8: auth.signOut()
+        // MENGGUNAKAN 'auth' yang dieksport dari firebase.config.js (V8)
         await auth.signOut(); 
         localStorage.removeItem('selectedPanitiaId');
         localStorage.removeItem('selectedPanitiaName');
@@ -105,7 +105,7 @@ accessBtn?.addEventListener('click', () => {
         localStorage.setItem('selectedPanitiaId', selectedPanitiaId);
         localStorage.setItem('selectedPanitiaName', selectedPanitiaName);
 
-        // Laluan telah dibetulkan: pages/dashboard.html
+        // Laluan yang betul
         window.location.href = 'pages/dashboard.html'; 
     } 
 });
@@ -114,7 +114,7 @@ accessBtn?.addEventListener('click', () => {
  * Periksa Status Pengguna & Muatkan UI yang betul
  */
 if (loginSection) { // Hanya jalankan pada index.html
-    // Guna kaedah V8: auth.onAuthStateChanged()
+    // MENGGUNAKAN 'auth' yang dieksport dari firebase.config.js (V8)
     auth.onAuthStateChanged((user) => { 
         if (user) {
             loginSection.style.display = 'none';
@@ -159,7 +159,7 @@ const loadDocuments = async () => {
     tableBody.innerHTML = '<tr><td colspan="5">Memuatkan data...</td></tr>';
 
     try {
-        // Guna kaedah V8: db.collection().doc().collection()
+        // MENGGUNAKAN 'db' yang dieksport dari firebase.config.js (V8)
         const documentsRef = db.collection('Panitia').doc(currentPanitiaId).collection(currentCategory);
         
         // Buat query
@@ -232,18 +232,16 @@ const handleFormSubmission = async (e) => {
             const file = fileInput.files[0];
             const uniqueId = docId || Date.now();
             
-            // Guna kaedah V8: storage.ref().child()
+            // MENGGUNAKAN 'storage' yang dieksport dari firebase.config.js (V8)
             const storagePath = `${currentPanitiaId}/${currentCategory}/${uniqueId}_${file.name}`;
             const fileRef = storage.ref().child(storagePath);
             
-            // Guna kaedah V8: fileRef.put(file)
             await fileRef.put(file);
             fileUrl = await fileRef.getDownloadURL();
 
             // Jika mengedit, padam fail lama dari Storage
             if (docId && existingFileUrl) {
                 try { 
-                    // Guna kaedah V8: storage.refFromURL()
                     const oldFileRef = storage.refFromURL(existingFileUrl);
                     await oldFileRef.delete(); 
                 } catch (err) { 
@@ -286,7 +284,7 @@ const handleDelete = async (docId, fileUrl) => {
     if (!confirm("Adakah anda pasti mahu memadam dokumen ini? Tindakan ini tidak boleh diundur.")) return;
 
     try {
-        // Padam dari Firestore (V8)
+        // MENGGUNAKAN 'db' dan 'storage' yang dieksport dari firebase.config.js (V8)
         const documentRef = db.collection('Panitia').doc(currentPanitiaId).collection(currentCategory).doc(docId);
         await documentRef.delete();
 
@@ -372,7 +370,8 @@ const initPanitiaView = () => {
     currentCategory = params.get('category');
     const panitiaName = localStorage.getItem('selectedPanitiaName');
 
-    if (!auth.currentUser || !currentPanitiaId || !currentCategory) {
+    // MENGGUNAKAN 'auth' yang dieksport dari firebase.config.js (V8)
+    if (!auth.currentUser || !currentPanitiaId || !currentCategory) { 
         alert("Sesi tamat atau data panitia tidak lengkap. Sila log masuk semula.");
         window.location.href = '../index.html';
         return;
@@ -392,7 +391,8 @@ const initPanitiaView = () => {
 
 document.addEventListener('DOMContentLoaded', () => {
     if (window.location.pathname.includes('panitia-view.html')) {
-        auth.onAuthStateChanged((user) => {
+        // MENGGUNAKAN 'auth' yang dieksport dari firebase.config.js (V8)
+        auth.onAuthStateChanged((user) => { 
             if (user) {
                 initPanitiaView();
             } else {
@@ -402,4 +402,3 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     } 
 });
-
