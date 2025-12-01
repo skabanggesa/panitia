@@ -3,60 +3,363 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Papan Pemuka Panitia</title>
+    <title>Dashboard - Sistem Pengurusan Panitia</title>
     <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD834R5Au1ksM0h-G0imluipJIN1br2g2g",
+            authDomain: "panitia-5be3a.firebaseapp.com",
+            projectId: "panitia-5be3a",
+            storageBucket: "panitia-5be3a.firebasestorage.app",
+            messagingSenderId: "814796521590",
+            appId: "1:814796521590:web:c0e31fa985401bcc571f57"
+        };
+        
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        
+        // Set global references
+        window.db = app.firestore();
+        window.auth = app.auth();
+        window.storage = app.storage();
+        window.firebaseReady = true;
+    </script>
+    
+    <style>
+        /* Additional styles for dashboard */
+        .dashboard-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #4a6491 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .user-info:before {
+            content: "👤";
+            font-size: 1.2rem;
+        }
+        
+        .dashboard-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .statistics-section {
+            margin-bottom: 2.5rem;
+        }
+        
+        .statistics-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            border-left: 4px solid #3498db;
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-card.total-card {
+            border-left-color: #2ecc71;
+            background: linear-gradient(135deg, #f8fff9 0%, #e8f6ef 100%);
+        }
+        
+        .stat-card.category-stat {
+            border-left-color: #9b59b6;
+        }
+        
+        .stat-card.error-card {
+            border-left-color: #e74c3c;
+        }
+        
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-number {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 0.5rem 0;
+        }
+        
+        .stat-desc {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        .categories-section {
+            margin-top: 2rem;
+        }
+        
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .category-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        
+        .category-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+            border: 1px solid #eaeaea;
+            transition: all 0.3s ease;
+            height: 100%;
+            display: flex;
+            align-items: flex-start;
+            gap: 1.5rem;
+        }
+        
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            border-color: #3498db;
+        }
+        
+        .category-icon {
+            font-size: 2.5rem;
+            background: #f8f9fa;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .category-info {
+            flex: 1;
+        }
+        
+        .category-info h3 {
+            margin: 0 0 0.5rem 0;
+            color: #2c3e50;
+            font-size: 1.2rem;
+        }
+        
+        .category-info p {
+            color: #7f8c8d;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+        
+        .category-link-text {
+            color: #3498db;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: block;
+            margin-top: 0.5rem;
+        }
+        
+        .loading-stats {
+            text-align: center;
+            padding: 2rem;
+            color: #7f8c8d;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .category-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-actions {
+                flex-direction: column;
+            }
+            
+            .stat-card {
+                padding: 1rem;
+            }
+            
+            .category-card {
+                padding: 1rem;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            
+            .category-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 2rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <h1>Papan Pemuka Panitia: <span id="panitia-name-display"></span></h1>
-        <nav>
-            <a href="../index.html" class="btn secondary-btn">Tukar Panitia / Log Keluar</a>
-        </nav>
-    </header>
+    <div id="app-container">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <h1 style="margin: 0; font-size: 1.8rem;">📊 Dashboard Panitia</h1>
+                    <h2 id="dashboard-panitia-name" style="margin: 0.5rem 0 0 0; font-size: 1.4rem; font-weight: normal;">
+                        Memuatkan nama panitia...
+                    </h2>
+                    <div class="user-info">
+                        Log masuk sebagai: <span id="user-email-display">...</span>
+                    </div>
+                </div>
+                <div class="dashboard-actions">
+                    <button id="refresh-stats-btn" class="btn" style="background: #17a2b8;">
+                        🔄 Kemaskini
+                    </button>
+                    <button id="back-to-selection-btn" class="btn" style="background: #6c757d;">
+                        ← Pilih Panitia Lain
+                    </button>
+                    <button id="dashboard-logout-btn" class="btn" style="background: #dc3545;">
+                        🚪 Log Keluar
+                    </button>
+                </div>
+            </div>
+        </div>
 
-    <main class="container">
-        <h2>Pilih Kategori Dokumen (7 Fail Utama)</h2>
-        
-        <section id="file-categories" class="grid-7">
-            <a href="panitia-view.html?category=pengurusan_perancangan" class="category-box">
-                <h3>1. Fail Induk</h3>
-                <p>Pengurusan dan Perancangan</p>
-            </a>
-            <a href="panitia-view.html?category=kurikulum" class="category-box">
-                <h3>2. Fail Kurikulum</h3>
-                <p>DSKP, RPT, BBM</p>
-            </a>
-            <a href="panitia-view.html?category=mesyuarat" class="category-box">
-                <h3>3. Fail Mesyuarat</h3>
-                <p>Minit, Notis, Kehadiran</p>
-            </a>
-            <a href="panitia-view.html?category=program_kecemerlangan" class="category-box">
-                <h3>4. Fail Program</h3>
-                <p>Pelan Strategik, Laporan Program</p>
-            </a>
-            <a href="panitia-view.html?category=peperiksaan_pentaksiran" class="category-box">
-                <h3>5. Fail Peperiksaan</h3>
-                <p>Analisis Keputusan, Bank Soalan</p>
-            </a>
-            <a href="panitia-view.html?category=penyeliaan_pencerapan" class="category-box">
-                <h3>6. Fail Penyeliaan</h3>
-                <p>Jadual & Borang Pencerapan PdP</p>
-            </a>
-            <a href="panitia-view.html?category=penyemakan_buku" class="category-box">
-                <h3>7. Fail Semakan Latihan</h3>
-                <p>Jadual & Laporan Pemeriksaan Buku</p>
-            </a>
+        <!-- Statistics Section -->
+        <section class="statistics-section">
+            <div class="statistics-header">
+                <h2>📈 Statistik Dokumen</h2>
+                <small>Statistik dikemas kini secara automatik</small>
+            </div>
+            
+            <div id="dashboard-stats" class="stats-container">
+                <div class="loading-stats">
+                    <div class="spinner" style="margin-right: 10px;"></div>
+                    Memuatkan statistik...
+                </div>
+            </div>
         </section>
-    </main>
 
+        <!-- Categories Section -->
+        <section class="categories-section">
+            <div class="statistics-header">
+                <h2>📁 Kategori Dokumen</h2>
+                <small>Klik pada kategori untuk mengurus dokumen</small>
+            </div>
+            
+            <p style="margin-bottom: 1.5rem; color: #555;">
+                Pilih salah satu kategori di bawah untuk menambah, melihat, mengedit atau memadam dokumen:
+            </p>
+            
+            <div id="category-links" class="category-grid">
+                <!-- Category cards will be dynamically inserted here -->
+            </div>
+        </section>
+
+        <!-- Quick Actions -->
+        <section style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid #eee;">
+            <h3>⚡ Tindakan Pantas</h3>
+            <div style="display: flex; gap: 1rem; margin-top: 1rem; flex-wrap: wrap;">
+                <button onclick="window.location.href='panitia-view.html?category=pengurusan_perancangan'" 
+                        class="btn" style="background: #2ecc71;">
+                    ➕ Tambah Dokumen Baru
+                </button>
+                <button onclick="printDashboard()" class="btn" style="background: #95a5a6;">
+                    🖨️ Cetak Dashboard
+                </button>
+                <button onclick="exportData()" class="btn" style="background: #f39c12;">
+                    📥 Eksport Data
+                </button>
+            </div>
+        </section>
+        
+        <!-- Footer -->
+        <footer style="margin-top: 3rem; padding: 1.5rem; text-align: center; color: #7f8c8d; border-top: 1px solid #eee;">
+            <p>Sistem Pengurusan Panitia &copy; 2024</p>
+            <p style="font-size: 0.9rem; margin-top: 0.5rem;">
+                Versi 1.0 | Terakhir dikemaskini: <span id="current-date"></span>
+            </p>
+        </footer>
+    </div>
+
+    <!-- Firebase Config Module -->
+    <script type="module" src="../js/firebase.config.js"></script>
+    <script type="module" src="../js/app.js"></script>
+    
     <script>
-        // Paparkan nama panitia yang dipilih
-        document.addEventListener('DOMContentLoaded', () => {
-            const panitiaName = localStorage.getItem('selectedPanitiaName');
-            if (panitiaName) {
-                document.getElementById('panitia-name-display').textContent = panitiaName;
-            } else {
-                // Jika tiada panitia, kembali ke halaman pemilihan
+        // Set current date in footer
+        document.getElementById('current-date').textContent = new Date().toLocaleDateString('ms-MY', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        
+        // Utility functions
+        function printDashboard() {
+            window.print();
+        }
+        
+        function exportData() {
+            alert('Fungsi eksport data akan datang dalam versi seterusnya.');
+        }
+        
+        // Handle back button
+        window.addEventListener('popstate', function(event) {
+            const user = window.auth?.currentUser;
+            if (!user) {
                 window.location.href = '../index.html';
             }
         });
