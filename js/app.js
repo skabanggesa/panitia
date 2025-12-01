@@ -1,5 +1,6 @@
 // =========================================================================
 // js/app.js - LOGIK UTAMA SISTEM PENGURUSAN PANITIA
+// Menggunakan API Firebase V8 pada objek yang diimport (db, auth, storage)
 // =========================================================================
 
 // Import rujukan dari firebase.config.js
@@ -71,7 +72,8 @@ loginForm?.addEventListener('submit', async (e) => {
         await auth.signInWithEmailAndPassword(email, password); 
     } catch (error) {
         console.error("Ralat Login:", error);
-        authErrorMessage.textContent = 'Email atau kata laluan tidak sah.';
+        // Mesej ralat log masuk standard
+        authErrorMessage.textContent = 'Email atau kata laluan tidak sah.'; 
     }
 });
 
@@ -108,7 +110,7 @@ accessBtn?.addEventListener('click', () => {
  * Periksa Status Pengguna & Muatkan UI yang betul
  */
 if (loginSection) { // Hanya jalankan pada index.html
-    // V8 Syntax: auth.onAuthStateChanged()
+    // V8 Syntax: auth.onAuthStateChanged() - Menggunakan objek auth yang diimport
     auth.onAuthStateChanged((user) => { 
         if (user) {
             loginSection.style.display = 'none';
