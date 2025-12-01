@@ -10,22 +10,6 @@ import { db, auth, storage } from "./firebase.config.js";
 // SEMUA IMPORT DARI URL "https://www.gstatic.com/..." TELAH DIBUANG!
 // -------------------------------------------------------------------------
 
-// Fungsi Firestore (Guna objek global 'firebase.firestore')
-const { 
-    collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy 
-} = firebase.firestore;
-
-// Fungsi Auth (Guna objek global 'firebase.auth')
-const { 
-    signInWithEmailAndPassword, onAuthStateChanged, signOut 
-} = firebase.auth;
-
-// Fungsi Storage (Guna objek global 'firebase.storage')
-const { 
-    ref, uploadBytes, getDownloadURL, deleteObject 
-} = firebase.storage; 
-
-
 // Pembolehubah Global
 let currentPanitiaId = null;
 let currentCategory = null;
@@ -418,3 +402,4 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     } 
 });
+
