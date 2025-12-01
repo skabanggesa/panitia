@@ -1,3 +1,5 @@
+[file name]: index.html
+[file content begin]
 <!DOCTYPE html>
 <html lang="ms">
 <head>
@@ -5,32 +7,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Pengurusan Panitia</title>
     <link rel="stylesheet" href="css/style.css">
-    
-    <!-- 1. FIREBASE GLOBAL SDK (Versi 8) - MESTI DIMUATKAN DAHULU -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-
-    <!-- 2. INISIALISASI FIREBASE DENGAN KONFIGURASI PENGGUNA -->
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyD834R5Au1ksM0h-G0imluipJIN1br2g2g",
-            authDomain: "panitia-5be3a.firebaseapp.com",
-            projectId: "panitia-5be3a",
-            storageBucket: "panitia-5be3a.firebasestorage.app",
-            messagingSenderId: "814796521590",
-            appId: "1:814796521590:web:c0e31fa985401bcc571f57"
-        };
-        
-        // Inisialisasi Aplikasi
-        const app = firebase.initializeApp(firebaseConfig);
-        
-        // Tetapkan rujukan ke objek global 'window' untuk diakses oleh modul (app.js)
-        window.db = app.firestore();
-        window.auth = app.auth();
-        window.storage = app.storage();
-    </script>
 </head>
 <body>
     
@@ -60,8 +36,38 @@
 
     </div>
 
-    <!-- 3. MODUL LOKAL ANDA - DIMUATKAN SEBAGAI MODUL -->
+    <!-- 1. FIREBASE GLOBAL SDK (Versi 8) - MUATKAN SEBELUM MODUL -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+    <!-- 2. INISIALISASI FIREBASE -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyD834R5Au1ksM0h-G0imluipJIN1br2g2g",
+            authDomain: "panitia-5be3a.firebaseapp.com",
+            projectId: "panitia-5be3a",
+            storageBucket: "panitia-5be3a.firebasestorage.app",
+            messagingSenderId: "814796521590",
+            appId: "1:814796521590:web:c0e31fa985401bcc571f57"
+        };
+        
+        // Inisialisasi Aplikasi
+        const app = firebase.initializeApp(firebaseConfig);
+        
+        // Tetapkan rujukan ke objek global
+        window.db = app.firestore();
+        window.auth = app.auth();
+        window.storage = app.storage();
+        
+        // Tandakan Firebase sudah siap
+        window.firebaseReady = true;
+    </script>
+
+    <!-- 3. MODUL LOKAL ANDA -->
     <script type="module" src="js/firebase.config.js"></script>
     <script type="module" src="js/app.js"></script>
 </body>
 </html>
+[file content end]
