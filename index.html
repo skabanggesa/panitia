@@ -22,7 +22,7 @@
             appId: "1:814796521590:web:c0e31fa985401bcc571f57"
         };
         
-        // Inisialisasi Aplikasi (Ini menyelesaikan "firebase is not defined")
+       // Inisialisasi Aplikasi (Ini menyelesaikan "firebase is not defined")
         const app = firebase.initializeApp(firebaseConfig);
         
         // Tetapkan rujukan (db, auth, storage) ke objek global 'window'
@@ -33,10 +33,35 @@
     </script>
 </head>
 <body>
+    
+    <div id="app-container">
+        
+        <section id="login-section">
+            <h2>Log Masuk Panitia</h2>
+            <form id="login-form">
+                <input type="email" id="login-email" placeholder="Email Guru" required>
+                <input type="password" id="login-password" placeholder="Kata Laluan" required>
+                <button type="submit">Log Masuk</button>
+                <p id="auth-error-message" style="color: red;"></p>
+            </form>
+        </section>
+
+        <section id="panitia-selection" style="display: none;">
+            <h2>Selamat Datang!</h2>
+            <p>Sila pilih panitia untuk diakses:</p>
+            <select id="panitia-dropdown">
+                <option value="">-- Memuatkan Panitia --</option>
+            </select>
+            <button id="access-panitia-btn" disabled>Akses Panitia</button>
+            <button id="logout-btn">Log Keluar</button>
+        </section>
+
+    </div>
 
     <script type="module" src="js/firebase.config.js"></script>
     <script type="module" src="js/app.js"></script>
 </body>
 </html>
+
 
 
