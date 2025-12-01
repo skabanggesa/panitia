@@ -1,6 +1,9 @@
-// js/firebase-config.js
+// =========================================================================
+// js/firebase.config.js - KONFIGURASI FIREBASE
+// PENTING: JANGAN IMPORT DARI URL DI SINI! (Ini akan menyebabkan ralat CORS)
+// =========================================================================
 
-// 1. Objek Konfigurasi Firebase Anda
+// Konfigurasi Firebase anda
 const firebaseConfig = {
     apiKey: "AIzaSyD834R5Au1ksM0h-G0imluipJIN1br2g2g",
     authDomain: "panitia-5be3a.firebaseapp.com",
@@ -10,19 +13,18 @@ const firebaseConfig = {
     appId: "1:814796521590:web:c0e31fa985401bcc571f57"
 };
 
-// 2. Initialize Firebase (Memulakan Aplikasi)
-// Menggunakan sintaks kompatibiliti (compat)
+// Inisialisasi Firebase menggunakan objek global 'firebase'
+// Objek 'firebase' ini disediakan oleh tag <script> dalam index.html
+if (typeof firebase === 'undefined') {
+    console.error("Firebase SDK tidak dimuatkan! Sila semak tag <script> dalam index.html.");
+}
+
 const app = firebase.initializeApp(firebaseConfig);
 
-// 3. Mendapatkan Rujukan kepada Perkhidmatan yang Digunakan
+// Dapatkan rujukan ke perkhidmatan yang diperlukan menggunakan kaedah v8
+const db = app.firestore();
+const storage = app.storage();
+const auth = app.auth();
 
-// Authentication (Auth)
-const auth = app.auth(); 
-
-// Firestore Database (db)
-const db = app.firestore(); 
-
-// Storage (Penyelesaian Ralat: Menggunakan firebase.storage() untuk sintaks compat)
-const storage = firebase.storage(); 
-
-console.log("Firebase telah diinisialisasi.");
+// Eksport rujukan ini supaya ia boleh digunakan dalam app.js
+export { db, storage, auth };
