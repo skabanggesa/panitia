@@ -4,45 +4,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Pengurusan Panitia</title>
-    <link rel="stylesheet" href="css/style.css"> 
-</head>
-<body>
-    <header>
-        <h1>Sistem Pengurusan Panitia Sekolah</h1>
-    </header>
-
-    <main class="container">
-        <section id="login-section">
-            <h2>Log Masuk Guru</h2>
-            <form id="login-form">
-                <label for="login-email">Email:</label>
-                <input type="email" id="login-email" class="form-control" required>
-                
-                <label for="login-password">Kata Laluan:</label>
-                <input type="password" id="login-password" class="form-control" required>
-                
-                <button type="submit" class="btn primary-btn">Log Masuk</button>
-                <p id="auth-error-message" class="error-text"></p>
-            </form>
-        </section>
-
-        <section id="panitia-selection" style="display:none;">
-            <h2>Selamat Datang, Guru!</h2>
-            <p>Sila pilih Panitia yang ingin anda uruskan:</p>
-            
-            <select id="panitia-dropdown" class="form-control">
-                <option value="">-- Pilih Panitia --</option>
-            </select>
-            
-            <button id="access-panitia-btn" class="btn primary-btn" disabled>Akses Papan Pemuka</button>
-            <button id="logout-btn" class="btn secondary-btn" style="float: right;">Log Keluar</button>
-        </section>
-    </main>
-
+    <link rel="stylesheet" href="css/style.css">
+    
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+    <script>
+        // *** PENTING: GANTIKAN DENGAN NILAI KONFIGURASI FIREBASE ANDA SEBENAR ***
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+        
+        // Inisialisasi Aplikasi
+        const app = firebase.initializeApp(firebaseConfig);
+        
+        // Tetapkan rujukan (db, auth, storage) ke objek global 'window'
+        // Ini membolehkan fail modul (firebase.config.js dan app.js) mengaksesnya.
+        window.db = app.firestore();
+        window.auth = app.auth();
+        window.storage = app.storage();
+    </script>
+</head>
+<body>
 
     <script type="module" src="js/firebase.config.js"></script>
     <script type="module" src="js/app.js"></script>
