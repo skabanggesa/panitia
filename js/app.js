@@ -2,34 +2,29 @@
 // js/app.js - LOGIK UTAMA SISTEM PENGURUSAN PANITIA
 // =========================================================================
 
-// Import rujukan dari firebase.config.js
-// Pastikan 'db', 'auth', dan 'storage' diimport.
-import { db, auth, storage } from "./firebase.config.js";
+// Import rujukan lokal dari firebase.config.js
+import { db, auth, storage } from "./firebase.config.js"; 
 
-// Import fungsi-fungsi Firebase yang diperlukan
-import { 
-    collection, 
-    getDocs, 
-    addDoc, 
-    updateDoc, 
-    deleteDoc, 
-    doc, 
-    query, 
-    orderBy 
-} from "https://www.gstatic.com/firebase/firebase-firestore.js";
+// -------------------------------------------------------------------------
+// PENTING: AKSES FUNGSI FIREBASE MELALUI OBJEK GLOBAL (SDK V8)
+// SEMUA IMPORT DARI URL "https://www.gstatic.com/..." TELAH DIBUANG!
+// -------------------------------------------------------------------------
 
-import { 
-    signInWithEmailAndPassword, 
-    onAuthStateChanged, 
-    signOut 
-} from "https://www.gstatic.com/firebase/firebase-auth.js";
+// Fungsi Firestore (Guna objek global 'firebase.firestore')
+const { 
+    collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy 
+} = firebase.firestore;
 
-import { 
-    ref, 
-    uploadBytes, 
-    getDownloadURL, 
-    deleteObject 
-} from "https://www.gstatic.com/firebase/firebase-storage.js";
+// Fungsi Auth (Guna objek global 'firebase.auth')
+const { 
+    signInWithEmailAndPassword, onAuthStateChanged, signOut 
+} = firebase.auth;
+
+// Fungsi Storage (Guna objek global 'firebase.storage')
+const { 
+    ref, uploadBytes, getDownloadURL, deleteObject 
+} = firebase.storage; 
+
 
 // Pembolehubah Global
 let currentPanitiaId = null;
@@ -53,12 +48,13 @@ const logoutBtn = document.getElementById('logout-btn');
  * Memuatkan senarai panitia dari Firestore dan mengisi dropdown.
  */
 const loadPanitiaList = async () => {
-    // Kosongkan opsyen lama (jika ada)
+    if (!panitiaDropdown) return;
     panitiaDropdown.innerHTML = '<option value="">-- Pilih Panitia --</option>';
 
     try {
-        const panitiaCol = collection(db, 'Panitia');
-        const panitiaSnapshot = await getDocs(panitiaCol);
+        // Guna kaedah V8: db.collection()
+        const panitiaCol = db.collection('Panitia'); 
+        const panitiaSnapshot = await panitiaCol.get(); 
         
         if (panitiaSnapshot.empty) {
             console.warn("Tiada panitia dijumpai dalam pangkalan data.");
@@ -68,20 +64,17 @@ const loadPanitiaList = async () => {
         panitiaSnapshot.forEach(doc => {
             const panitiaData = doc.data();
             const option = document.createElement('option');
-            // ID dokumen digunakan sebagai nilai (cth: 'bahasa_melayu')
             option.value = doc.id; 
             option.textContent = panitiaData.nama; 
             panitiaDropdown.appendChild(option);
         });
 
-        // Dayakan butang akses setelah senarai dimuatkan
         panitiaDropdown.addEventListener('change', () => {
             accessBtn.disabled = !panitiaDropdown.value;
         });
 
     } catch (error) {
         console.error("Ralat memuatkan senarai panitia: ", error);
-        // authErrorMessage.textContent = "Gagal menyambung ke pangkalan data senarai panitia.";
     }
 };
 
@@ -95,8 +88,8 @@ loginForm?.addEventListener('submit', async (e) => {
     const password = document.getElementById('login-password').value;
 
     try {
-        await signInWithEmailAndPassword(auth, email, password);
-        // Status akan diuruskan oleh onAuthStateChanged
+        // Guna kaedah V8: auth.signInWithEmailAndPassword()
+        await auth.signInWithEmailAndPassword(email, password); 
     } catch (error) {
         console.error("Ralat Login:", error);
         authErrorMessage.textContent = 'Email atau kata laluan tidak sah.';
@@ -108,7 +101,8 @@ loginForm?.addEventListener('submit', async (e) => {
  */
 logoutBtn?.addEventListener('click', async () => {
     try {
-        await signOut(auth);
+        // Guna kaedah V8: auth.signOut()
+        await auth.signOut(); 
         localStorage.removeItem('selectedPanitiaId');
         localStorage.removeItem('selectedPanitiaName');
     } catch (error) {
@@ -127,7 +121,8 @@ accessBtn?.addEventListener('click', () => {
         localStorage.setItem('selectedPanitiaId', selectedPanitiaId);
         localStorage.setItem('selectedPanitiaName', selectedPanitiaName);
 
-        window.location.href = 'pages/dashboard.html';
+        // Laluan telah dibetulkan: pages/dashboard.html
+        window.location.href = 'pages/dashboard.html'; 
     } 
 });
 
@@ -135,14 +130,13 @@ accessBtn?.addEventListener('click', () => {
  * Periksa Status Pengguna & Muatkan UI yang betul
  */
 if (loginSection) { // Hanya jalankan pada index.html
-    onAuthStateChanged(auth, (user) => {
+    // Guna kaedah V8: auth.onAuthStateChanged()
+    auth.onAuthStateChanged((user) => { 
         if (user) {
-            // Pengguna log masuk
             loginSection.style.display = 'none';
             panitiaSelectionSection.style.display = 'block';
             loadPanitiaList();
         } else {
-            // Pengguna log keluar
             loginSection.style.display = 'block';
             panitiaSelectionSection.style.display = 'none';
         }
@@ -181,9 +175,12 @@ const loadDocuments = async () => {
     tableBody.innerHTML = '<tr><td colspan="5">Memuatkan data...</td></tr>';
 
     try {
-        const documentsRef = collection(db, 'Panitia', currentPanitiaId, currentCategory);
-        const q = query(documentsRef, orderBy('date', 'desc')); 
-        const snapshot = await getDocs(q);
+        // Guna kaedah V8: db.collection().doc().collection()
+        const documentsRef = db.collection('Panitia').doc(currentPanitiaId).collection(currentCategory);
+        
+        // Buat query
+        const q = documentsRef.orderBy('date', 'desc'); 
+        const snapshot = await q.get();
         
         tableBody.innerHTML = '';
         totalCount.textContent = snapshot.size;
@@ -238,7 +235,6 @@ const handleFormSubmission = async (e) => {
     const title = document.getElementById('doc-title').value;
     const date = document.getElementById('doc-date').value;
     const fileInput = document.getElementById('doc-file');
-    // Ambil URL fail sedia ada yang disimpan semasa mod edit
     const existingFileUrl = fileInput.dataset.existingUrl || ''; 
     
     const submitBtn = document.getElementById('submit-btn');
@@ -251,34 +247,38 @@ const handleFormSubmission = async (e) => {
         if (fileInput.files.length > 0) {
             const file = fileInput.files[0];
             const uniqueId = docId || Date.now();
-            const storagePath = `${currentPanitiaId}/${currentCategory}/${uniqueId}_${file.name}`;
-            const storageRef = ref(storage, storagePath);
             
-            await uploadBytes(storageRef, file);
-            fileUrl = await getDownloadURL(storageRef);
+            // Guna kaedah V8: storage.ref().child()
+            const storagePath = `${currentPanitiaId}/${currentCategory}/${uniqueId}_${file.name}`;
+            const fileRef = storage.ref().child(storagePath);
+            
+            // Guna kaedah V8: fileRef.put(file)
+            await fileRef.put(file);
+            fileUrl = await fileRef.getDownloadURL();
 
             // Jika mengedit, padam fail lama dari Storage
             if (docId && existingFileUrl) {
                 try { 
-                    const oldFileRef = ref(storage, existingFileUrl);
-                    await deleteObject(oldFileRef); 
+                    // Guna kaedah V8: storage.refFromURL()
+                    const oldFileRef = storage.refFromURL(existingFileUrl);
+                    await oldFileRef.delete(); 
                 } catch (err) { 
                     console.warn("Gagal padam fail lama (mungkin tidak wujud):", err); 
                 }
             }
         }
         
-        // B. Simpan atau Kemaskini Data dalam Firestore
+        // B. Simpan atau Kemaskini Data dalam Firestore (V8)
         const data = { title, date, fileUrl };
-        const documentsRef = collection(db, 'Panitia', currentPanitiaId, currentCategory);
+        const documentRef = db.collection('Panitia').doc(currentPanitiaId).collection(currentCategory);
         
         if (docId) {
-            // EDIT/UPDATE
-            await updateDoc(doc(documentsRef, docId), data);
+            // EDIT/UPDATE: update()
+            await documentRef.doc(docId).update(data);
             alert("Dokumen berjaya dikemaskini!");
         } else {
-            // TAMBAH/CREATE
-            await addDoc(documentsRef, data);
+            // TAMBAH/CREATE: add()
+            await documentRef.add(data);
             alert("Dokumen berjaya ditambah!");
         }
         
@@ -302,15 +302,14 @@ const handleDelete = async (docId, fileUrl) => {
     if (!confirm("Adakah anda pasti mahu memadam dokumen ini? Tindakan ini tidak boleh diundur.")) return;
 
     try {
-        // Padam dari Firestore
-        const documentRef = doc(db, 'Panitia', currentPanitiaId, currentCategory, docId);
-        await deleteDoc(documentRef);
+        // Padam dari Firestore (V8)
+        const documentRef = db.collection('Panitia').doc(currentPanitiaId).collection(currentCategory).doc(docId);
+        await documentRef.delete();
 
-        // Padam dari Storage (jika ada fail)
+        // Padam dari Storage (jika ada fail, V8)
         if (fileUrl) {
-            // Kita perlu menggunakan getDownloadURL untuk mendapatkan rujukan Storage yang betul
-            const fileRef = ref(storage, fileUrl); 
-            await deleteObject(fileRef);
+            const fileRef = storage.refFromURL(fileUrl);
+            await fileRef.delete();
         }
 
         alert("Dokumen berjaya dipadam!");
@@ -370,7 +369,7 @@ const setupEventListeners = () => {
             document.getElementById('document-id').value = docId;
             document.getElementById('doc-title').value = title;
             document.getElementById('doc-date').value = date;
-            document.getElementById('doc-file').dataset.existingUrl = fileUrl; // Simpan URL fail lama
+            document.getElementById('doc-file').dataset.existingUrl = fileUrl; 
             
             document.getElementById('form-action').textContent = 'Edit';
             document.getElementById('submit-btn').textContent = 'Kemaskini';
@@ -384,25 +383,20 @@ const setupEventListeners = () => {
  * Inisialisasi utama untuk panitia-view.html
  */
 const initPanitiaView = () => {
-    // 1. Ambil ID Panitia dan Kategori dari Local Storage & URL
     currentPanitiaId = localStorage.getItem('selectedPanitiaId');
     const params = new URLSearchParams(window.location.search);
     currentCategory = params.get('category');
     const panitiaName = localStorage.getItem('selectedPanitiaName');
 
-    // 2. Semak Autentikasi dan Data Asas
     if (!auth.currentUser || !currentPanitiaId || !currentCategory) {
-        // Arahkan kembali ke login/pemilihan panitia jika tiada maklumat penting
         alert("Sesi tamat atau data panitia tidak lengkap. Sila log masuk semula.");
         window.location.href = '../index.html';
         return;
     }
 
-    // 3. Paparkan tajuk yang betul
     document.getElementById('panitia-name-display').textContent = panitiaName;
     document.getElementById('category-title').textContent = formatCategoryName(currentCategory);
 
-    // 4. Load Data dan Sediakan Listener
     loadDocuments();
     setupEventListeners();
 };
@@ -413,18 +407,14 @@ const initPanitiaView = () => {
 // =========================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Jalankan logik panitia-view.html jika kita berada di halaman tersebut
     if (window.location.pathname.includes('panitia-view.html')) {
-        // Periksa status auth sekali lagi sebelum inisialisasi pandangan
-        onAuthStateChanged(auth, (user) => {
+        auth.onAuthStateChanged((user) => {
             if (user) {
                 initPanitiaView();
             } else {
-                // Redirect jika sesi tamat semasa berada di halaman dalaman
                 alert("Sesi log masuk telah tamat.");
                 window.location.href = '../index.html';
             }
         });
     } 
-    // Logik untuk index.html dikendalikan oleh onAuthStateChanged di atas.
 });
